@@ -54,29 +54,30 @@ public class OnlineStoreApp {
     private void promptCart(double total) {
         while (true) {
             System.out.println("[Select an option from those below]");
-            System.out.println("1.) Check out");
-            System.out.println("0.) Return to home screen");
+            System.out.println("1.) Check out (C)");
+            System.out.println("2.) Return to home screen (X)");
             System.out.print("Enter: ");
 
             try {
-                int reply = scanner.nextInt();
+                String reply = scanner.next();
                 switch (reply) {
-                    case 1:
+                    case "1":
+                    case "C":
+                    case "c":
                         // Check out
                         System.out.println("Checking out...\n");
                         promptSale(total);
-
                         return;
-                    case 0:
+                    case "2":
+                    case "X":
+                    case "x":
                         // Return to home screen
                         System.out.println("Returning to home screen...\n");
                         homeScreen();
-
                         return;
                     default:
                         // Catch incorrect input
                         System.out.println("Unknown input, please try again\n");
-
                         promptCart(total);
                 }
 
@@ -89,6 +90,7 @@ public class OnlineStoreApp {
             }
         }
     }
+
 
     private void displayCart() {
         System.out.println("[The following items are in your cart]");
