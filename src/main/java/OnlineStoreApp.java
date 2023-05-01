@@ -31,7 +31,12 @@ public class OnlineStoreApp {
                 String line = fileScanner.nextLine();
                 String[] parts = line.split("\\|");
 
-                int id = Integer.parseInt(parts[0]);
+                String idString = parts[0];
+                if (!idString.matches("\\d+")) {
+                    throw new IllegalArgumentException("Invalid product ID: " + idString);
+                }
+                int id = Integer.parseInt(idString);
+
                 String name = parts[1];
                 double price = Double.parseDouble(parts[2]);
 
@@ -42,6 +47,9 @@ public class OnlineStoreApp {
             fileScanner.close();
         } catch (FileNotFoundException e) {
             System.out.println("Inventory file not found!");
+            throw new RuntimeException(e);
+        } catch (NumberFormatException | IllegalArgumentException e) {
+            System.out.println("Invalid inventory file format: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -106,11 +114,27 @@ public class OnlineStoreApp {
             // Return to home screen
             System.out.println("Returning to home screen...\n");
             homeScreen();
-
             return;
         }
 
-        
+        try {
+            int productId = Integer.parseInt(reply);
+            Product product = inventoryMap.get(productId);
+
+            if (product == null) {
+                // Product not found
+                throw new IllegalArgumentException("Product not found");
+            }
+
+            cart.add(product);
+            System.out.println(product.getName() + " has been added to your cart.\n");
+        } catch (NumberFormatException e) {
+            System.out.println("Please enter a valid product id\n");
+            displayProducts();
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage() + "\n");
+            displayProducts();
+        }
     }
 }
 
