@@ -7,7 +7,7 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class OnlineStoreApp {
-    // Global variables for use in multiple functions
+    
     public Scanner scanner = new Scanner(System.in);
     public HashMap<Integer,Product> inventoryMap = new HashMap<>();
     public static ArrayList<Product> cart = new ArrayList<>();
