@@ -6,10 +6,10 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class OnlineStoreApp {
+    public static ArrayList<Product> cart = new ArrayList<>();
     // Global variables for use in multiple functions
     public Scanner scanner = new Scanner(System.in);
     public HashMap<Integer, Product> inventoryMap = new HashMap<>();
-    public static ArrayList<Product> cart = new ArrayList<>();
 
     public void run() {
         // Load items from the csv file into the inventory Map
@@ -83,7 +83,35 @@ public class OnlineStoreApp {
             // Incorrect input catcher
             System.out.println("Please use an integer to reply\n");
 
-
+            scanner.nextLine();
+            homeScreen();
         }
     }
+
+    private void displayCart() {
+    }
+
+    private void displayProducts() {
+        System.out.println("[The following products are available]");
+
+        for (int id : inventoryMap.keySet()) {
+            Product product = inventoryMap.get(id);
+            System.out.println(product.getId() + ".) " + product.getName() + " - $" + product.getPrice());
+        }
+
+        System.out.print("Enter product id to add to cart (or X to go back to home screen): ");
+        String reply = scanner.next();
+
+        if (reply.equalsIgnoreCase("X")) {
+            // Return to home screen
+            System.out.println("Returning to home screen...\n");
+            homeScreen();
+
+            return;
+        }
+
+        
+    }
 }
+
+
