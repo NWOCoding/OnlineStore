@@ -2,12 +2,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class OnlineStoreApp {
     // Global variables for use in multiple functions
     public Scanner scanner = new Scanner(System.in);
-    public HashMap<Integer,Product> inventoryMap = new HashMap<>();
+    public HashMap<Integer, Product> inventoryMap = new HashMap<>();
     public static ArrayList<Product> cart = new ArrayList<>();
 
     public void run() {
@@ -41,8 +42,48 @@ public class OnlineStoreApp {
             fileScanner.close();
         } catch (FileNotFoundException e) {
             System.out.println("Inventory file not found!");
-            System.exit(1);
+            throw new RuntimeException(e);
         }
     }
 
-    private void homeScreen()
+    private void homeScreen() {
+        System.out.println("[Welcome to the Online Store]");
+        System.out.println("[Select an option from those below]");
+        System.out.println("1.) Show products");
+        System.out.println("2.) Show cart");
+        System.out.println("3.) Exit");
+        System.out.print("Enter: ");
+
+        try {
+            int reply = scanner.nextInt();
+            switch (reply) {
+                case 1:
+                    // Show products
+                    displayProducts();
+
+                    break;
+                case 2:
+                    // Show cart
+                    displayCart();
+
+                    break;
+                case 3:
+                    // Exit
+                    System.out.println("Goodbye!");
+                    System.exit(0);
+
+                    break;
+                default:
+                    // Catch incorrect input
+                    System.out.println("Unknown input, please try again\n");
+
+                    homeScreen();
+            }
+        } catch (InputMismatchException e) {
+            // Incorrect input catcher
+            System.out.println("Please use an integer to reply\n");
+
+
+        }
+    }
+}
