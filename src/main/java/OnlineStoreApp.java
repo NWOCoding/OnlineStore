@@ -1,3 +1,4 @@
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -6,136 +7,204 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class OnlineStoreApp {
-    public static ArrayList<Product> cart = new ArrayList<>();
     // Global variables for use in multiple functions
     public Scanner scanner = new Scanner(System.in);
-    public HashMap<Integer, Product> inventoryMap = new HashMap<>();
-
-    public void run() {
+    public HashMap<Integer,Product> inventoryMap = new HashMap<>();
+    public static ArrayList<Product> cart = new ArrayList<>();
+    public void run(){
         // Load items from the csv file into the inventory Map
         loadInventory();
-
         // Start the loop and display the home screen
-        while (true) {
-            homeScreen();
-        }
+        homeScreen();
     }
 
-    private void loadInventory() {
-        File inventoryFile = new File("Inventory.csv");
+    private void promptSale(double total){
+        System.out.print("Enter amount paid: $");
 
         try {
-            Scanner fileScanner = new Scanner(inventoryFile);
+            double reply = scanner.nextDouble();
+            double remainder = Math.floor((total - reply) * 100) / 100;
 
-            while (fileScanner.hasNextLine()) {
-                String line = fileScanner.nextLine();
-                String[] parts = line.split("\\|");
+            if (remainder <= 0 ) {
+                // Change due
+                remainder = Math.abs(remainder);
 
-                String idString = parts[0];
-                if (!idString.matches("\\d+")) {
-                    throw new IllegalArgumentException("Invalid product ID: " + idString);
+                System.out.println("\n[Receipt]");
+                for (Product product :  cart) {
+                    System.out.println("-" + product.getName());
                 }
-                int id = Integer.parseInt(idString);
+                System.out.println("Change due: $" + remainder + "\n");
 
-                String name = parts[1];
-                double price = Double.parseDouble(parts[2]);
-
-                Product product = new Product(id, name, price);
-                inventoryMap.put(id, product);
+                cart = new ArrayList<>();
+                homeScreen();
+            }else {
+                // Lack of funds
+                System.out.println("Lack of funds, refund issued\n");
+                promptSale(total);
             }
 
-            fileScanner.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("Inventory file not found!");
-            throw new RuntimeException(e);
-        } catch (NumberFormatException | IllegalArgumentException e) {
-            System.out.println("Invalid inventory file format: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void homeScreen() {
-        System.out.println("[Welcome to the Online Store]");
-        System.out.println("[Select an option from those below]");
-        System.out.println("1.) Show products");
-        System.out.println("2.) Show cart");
-        System.out.println("3.) Exit");
-        System.out.print("Enter: ");
-
-        try {
-            int reply = scanner.nextInt();
-            switch (reply) {
-                case 1:
-                    // Show products
-                    displayProducts();
-
-                    break;
-                case 2:
-                    // Show cart
-                    displayCart();
-
-                    break;
-                case 3:
-                    // Exit
-                    System.out.println("Goodbye!");
-                    System.exit(0);
-
-                    break;
-                default:
-                    // Catch incorrect input
-                    System.out.println("Unknown input, please try again\n");
-
-                    homeScreen();
-            }
         } catch (InputMismatchException e) {
             // Incorrect input catcher
-            System.out.println("Please use an integer to reply\n");
+            System.out.println("Please use an double / float to reply\n");
 
             scanner.nextLine();
-            homeScreen();
+            promptCart(total);
+        }
+    }
+    private void promptCart(double total) {
+        while (true) {
+            System.out.println("[Select an option from those below]");
+            System.out.println("1.) Check out");
+            System.out.println("0.) Return to home screen");
+            System.out.print("Enter: ");
+
+            try {
+                int reply = scanner.nextInt();
+                switch (reply) {
+                    case 1:
+                        // Check out
+                        System.out.println("Checking out...\n");
+                        promptSale(total);
+
+                        return;
+                    case 0:
+                        // Return to home screen
+                        System.out.println("Returning to home screen...\n");
+                        homeScreen();
+
+                        return;
+                    default:
+                        // Catch incorrect input
+                        System.out.println("Unknown input, please try again\n");
+
+                        promptCart(total);
+                }
+
+            } catch (InputMismatchException e) {
+                // Incorrect input catcher
+                System.out.println("Please use an integer to reply\n");
+
+                scanner.nextLine();
+                promptCart(total);
+            }
         }
     }
 
     private void displayCart() {
+        System.out.println("[The following items are in your cart]");
+
+        double total = 0;
+        for (Product product :  cart) {
+            System.out.println("-" + product.getName());
+            total += product.getPrice();
+        }
+
+        total = Math.floor(total * 100) / 100;
+        System.out.println("Total: $" + total + "\n");
+
+        promptCart(total);
     }
 
-    private void displayProducts() {
-        System.out.println("[The following products are available]");
+    private void promptProducts() {
+        while (true) {
+            System.out.println("[Enter the product ID or '0' to return to Home Screen]");
+            System.out.print("Enter: ");
 
-        for (int id : inventoryMap.keySet()) {
-            Product product = inventoryMap.get(id);
-            System.out.println(product.getId() + ".) " + product.getName() + " - $" + product.getPrice());
-        }
+            try {
+                int reply = scanner.nextInt();
+                if (inventoryMap.get(reply) != null) {
+                    // Add item to cart
+                    Product product = inventoryMap.get(reply);
+                    System.out.println("Adding " + product.getName() + " to cart...\n");
 
-        System.out.print("Enter product id to add to cart (or X to go back to home screen): ");
-        String reply = scanner.next();
+                    cart.add(product);
+                } else if (reply == 0){
+                    // Return to home screen
+                    System.out.println("Returning to home screen...\n");
 
-        if (reply.equalsIgnoreCase("X")) {
-            // Return to home screen
-            System.out.println("Returning to home screen...\n");
-            homeScreen();
-            return;
-        }
+                    homeScreen();
+                    return;
+                } else {
+                    // Unknown product catcher
+                    System.out.println("Unknown product ID, please try again...\n");
 
-        try {
-            int productId = Integer.parseInt(reply);
-            Product product = inventoryMap.get(productId);
+                    promptProducts();
+                }
 
-            if (product == null) {
-                // Product not found
-                throw new IllegalArgumentException("Product not found");
+            } catch (InputMismatchException e) {
+                // Incorrect input catcher
+                System.out.println("Please use an integer to reply...\n");
+
+                scanner.nextLine();
+                promptProducts();
             }
+        }
+    }
+    private void displayProducts() {
+        for (Integer id :  inventoryMap.keySet()) {
+            Product product = inventoryMap.get(id);
 
-            cart.add(product);
-            System.out.println(product.getName() + " has been added to your cart.\n");
-        } catch (NumberFormatException e) {
-            System.out.println("Please enter a valid product id\n");
-            displayProducts();
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage() + "\n");
-            displayProducts();
+            System.out.println("Id: " + product.getId());
+            System.out.println("Name: " + product.getName());
+            System.out.println("Price: $" + product.getPrice() + "\n");
+        }
+
+        promptProducts();
+    }
+    public void homeScreen(){
+        while (true) {
+            System.out.println("[Select an option from those below]");
+            System.out.println("1.) Show products");
+            System.out.println("2.) Show cart");
+            System.out.println("0.) Exit application");
+            System.out.print("Enter: ");
+
+            try {
+                int reply = scanner.nextInt();
+                switch (reply) {
+                    case 1:
+                        System.out.println("Showing products...\n");
+                        displayProducts();
+
+                        return;
+                    case 2:
+                        System.out.println("Showing cart...\n");
+                        displayCart();
+
+                        return;
+                    case 0:
+                        System.out.println("Exiting application...\n");
+                        System.exit(0);
+
+                        return;
+                    default:
+                        System.out.println("Please enter a valid choice\n");
+
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Please use an integer to reply\n");
+
+                scanner.nextLine();
+                homeScreen();
+            }
+        }
+    }
+    public void loadInventory(){
+        try (Scanner reader = new Scanner(new File("inventory.csv"))){
+            while (reader.hasNextLine()) {
+                String line = reader.nextLine();
+                String[] split = line.split("\\|");
+
+                int id = Integer.parseInt(split[0]);
+                String name = split[1];
+                double price = Double.parseDouble(split[2]);
+
+                Product product = new Product(id,name,price);
+
+                inventoryMap.put(id,product);
+            }
+        } catch (FileNotFoundException e){
+            System.out.println("Error: " + e);
         }
     }
 }
-
-
