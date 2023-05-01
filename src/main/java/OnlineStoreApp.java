@@ -7,7 +7,7 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class OnlineStoreApp {
-    
+
     public Scanner scanner = new Scanner(System.in);
     public HashMap<Integer,Product> inventoryMap = new HashMap<>();
     public static ArrayList<Product> cart = new ArrayList<>();
@@ -19,7 +19,7 @@ public class OnlineStoreApp {
     }
 
     private void promptSale(double total){
-        System.out.print("Enter amount paid: $");
+        System.out.print("Enter Payment: $");
 
         try {
             double reply = scanner.nextDouble();
